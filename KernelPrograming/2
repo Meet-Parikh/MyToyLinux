@@ -1,0 +1,200 @@
+Module is a carrier or service to load driver
+it mean driver may be the part of module body
+
+1.
+#include<linux/module.h> //kmod inerface
+#include<linux/init.h>
+header must include source code from the kernal headers
+
+2nd 
+----
+
+code should not invoke or access function of usermode libraries including APIS
+
+3. modules can have iitializer and exit routines
+
+	initializer is executed while linking the module in to the kernel code segment/kernel address space
+	cleanup/exit function is excecuted when the module is unlink from the kernel address space
+
+signature of init function is :
+int void : 
+int fun(void) initializer // return int so uh can check the module is loaded a not(-1 means compiler will throw error)
+module body function
+
+signature of exit function is :
+void void;
+
+void fun(void) fini function//not compalsary because linker having default function
+
+above funtion will not run till application not calling this
+
+________________________________________________________
+
+module can contains n num of function or data veriable 
+
+4.Module can contains a set of MACROS to retrive the comments 
+
+We want information in to the binary file
+
+add new section in elf file
+and tool will see the that part in ELF and it will add
+
+
+----------------------------------------------------------
+
+>insmod and modprob are programmed to use a system call finit_module to initiat deployment of a module .
+
+>   init_module() loads an ELF image into kernel space, performs any necessary symbol relocations, 
+	initializes module parameters to values provided by the caller,
+    and then runs the module's init function.  This system call requires privilege.
+> 	exit function : The  delete_module()/cleanup_module  system call attempts to remove the unused 
+	loadable module entry identified by name.
+
+
+strace insmod myhello.c
+___________________________
+
+
+
+
+finit_module = this is the actual API for the kspace 
+		- to load the module in to the kspace
+		- 64 bit system = use finit_module
+		- 32 bit system  = use init_module
+
+--------------------------------------
+
+
+dump_stack() = function show the full trace of kernel mode also .
+cmd dmsg is the tool to see the msges we can see the call stacks
+
+
+
+---------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------
+
+
+
+>symboles of module.e are by default local to module(not visible to rest of the kernel)
+>modules can selecivly export any of the symboles in to kernal global symbol table 
+
+posible macros
+--------------
+unconditonal export = anyone can access the kernal code
+	EXPORT_SYMBOL(sm)
+	EXPORT_UNUSED_SYMBOL(sym)
+
+conditional export = mean other kernal code access this by GPL licence code
+	EXPORT_SYMBOL_GPL(sm)
+	EXPORT_SYMBOL_GPL_FUTURE(sm)
+	EXPORT_UNUSED_SYMBOL_GPL(sym)
+
+
+note : uh can not remove the module till anyother file will not uses the propertie of the other module . 
+
+so we need to remove the module which is uses the other module then we can remove the first module
+
+--------------------------------------
+two way to access the symbol 
+
+1st direct define the symbole so it will stay (in this usecount not dec) 
+---
+2nd :
+----
+ptr = (int *)__symbol_get("veda_counter");//INC the use count 
+In between opration of perticular symbol 
+__symbol_put("veda_counter"); = remove/dec the count of use and remove the dependancy
+
+lsmod filename | more : we the info about perticular module
+
+why print
+---------
+user intraction
+
+printk we are using for kernal:(printk dosn't have the terminal access)
+-----------------------------------------------------------------------
+debugging
+error checking
+testing
+
+
+kernal logbuf uses for printk , default = 128k 
+
+
+------
+sir doc
+--------
+
+Important of Printk
+----------------------------
+> why print statement in programming?
+Fow below 4 reason we are using print functions
+1.user interaction
+2.error reporting
+3.testing
+4.debugging
+
+
+since kernal is suppose to be backgrond(kernalprogramming means one type of abstraction we are providing 
+to the user so no need to show msgs on terminal so thats the resason is we are using printk in kernal programming 
+and non interactive to user so print statment in kernal not shown 
+to the terminal , kernal print statments are gathered into a"logbuffer" and can be read usermod tools
+
+
+
+--------------------------------------------------------------
+
+klogctl see the prog printlog.c
+
+how to see the perticular logs. so kernal programmer need to use catagoris(catagorise through printk macros ) 
+
+and we need to short this all logs in usermode so we can devides the categories in to diff diff files 
+
+printk having default catogorie is debug
+
+
+printk we can use by the wrapper of printk  example : moddep1.c 
+
+
+
+-----------
+sir doc
+--------
+
+1.application can be programmed to catgorised print messages as per their type(Debug/test/error)
+2.kernal code must used printk with lable parameters which defines type/catagorie of the message
+
+	KERN_EMERG   KERN_SOH "0"
+	KERN_ALERT 	 KERN_SOH "1"
+	KERN_CRIT 	 
+	KERN_ERR
+	KERN_WARNING
+	KERN_NOTICE
+	KERN_INFO
+	KERN_DEBUGI
+	
+	KERN_DEFAULT
+
+example how to use
+
+	printk(KERN_INFO "your message",...);
+
+example : kern_level.h
+
+3.Assigning lable is not medatory such messages are consider as debug
+
+>>for better message log support the following wrapper macros are recommanded to be used over printk
+
+pr_emerg(fmt,...)
+pr_alert
+pr_crit
+pr_err
+pr_warning
+pr_notice
+pr_info
+pr_cont
+pr_dbg
+
+
+Next session on : 
+memory managment, how to allocate the memory

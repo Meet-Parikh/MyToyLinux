@@ -1,0 +1,493 @@
+Explanation of BUS daigram and components conneted to the bus that i explained or writen in book 
+First refer the book and continue from here....
+
+---------------------------------------------------------------------------------------------
+
+Bus Terminology 
+----------------
+
+
+Note : If bus is inside the SOC then we can't handle through our software , But bus is on the board then we
+can control by software.
+
+> Genric commponent of any BUS:(I2C,SPI,USB etc. etc.)
+-----------------------------------------------------
+
+1). Master (Or Initiator)
+-------------------------
+		IP component that initiates a read or write data transfer.
+2).Slave(or Target)
+----------------------
+		IP components that does not initiate transfers and only responds to incomming transfer requests.
+3).Arbiter.
+-------------
+		Control access to the shared bus
+		Uses arbitration Scheme to select master to grant access to bus
+4).Decoder
+-----------
+		Detemines which component a transfer is intended for
+5).Bridge:
+------------
+		Connets two busses
+		Acts as slave on one side and master on the other.
+	
+
+--------------------------------------------------------------------------------------------------------------
+Explanation:
+-----------
+
+Apart froom this above componnets BUS FABRIC it self is structred with address line , control line and data lines.
+
+
+>Address BUS:
+------------
+	Howmany line to engague to travels per the address that is the width of the address BUS.
+	Example : If the address bus is the 8-Bit data so that is the width if data bus.
+			  and if 16-bit so 16 lines and so on.
+			  In some buses you have two adderess buses , One for Read Opration and One for write Opration.
+
+>Data BUS:
+------------
+	Howmany lines we engague for tansfer of data that is the width of Data BUS.
+	Also In data bus we can have two buses . one is for read data bus and is for write data bus.
+
+
+>Contol BUS :
+------------
+	Howmany lines we use to initiates the control opration that is the width of Control Bus or that is the 
+number of commands possible , so verious attribute to various control commands ,
+	So this is depending on the how the BUS protocol is those many contol lines , BUS protocol directly reflects 
+to the control lines 
+
+Note : Some bus having the single bunch of wires which will works for both data and address. 
+
+So above any combination is possible depending on the BUS FEBRIC ,
+If you take I2C address and data bus are on the same line
+If you take PCI address is diffrent and data is diffrent ,
+
+its depends on buses and what kind of devices we are using based on that it will change number of lines of 
+data and address.
+
+PPT Notes:
+---------
+
+A bus typically consistes of three types of signal lines:
+
+@Address:
+		~Carry address of destination for which transfer is initiated
+		~Can be shared or saprate for read , write data
+@Data:
+		~Carry information between source and destination components
+		~Can be shared or separate for read, write data
+		~Choice of data width critical for application performance
+@Control : (Control lines are depends on protocol how is the protocol is ? There is the attribute like size 
+				of data , transfer boud , cacheabble or non cacheable)
+		~Request and acknowledgements
+		~Specify more information about type of data transfer
+			Byte enale,Brust size, cacheable/Bufferable.	
+------------------------------------------------------------------------------
+
+SEE THE DAIGRAM 1.2 IN BOOK
+
+So if device to be assigned the address api , how it would be programmed ?where its programmed ?
+-In decoder(Otherwise we can give request), Decoder is to be programmed with the information of address which
+is assigned to the device.
+
+>On x86 platform or On x86 class of machine there are two primary decoders 
+	~There is one address space circuit called port address space decoder.
+	~There is one more circuit for address decoder called memory address decoder.
+
+if the device is iterfaced through the decoder of memory is called memory mapped .
+if the device is interfaced through address decoder of port it is called port mapped.
+
+On x86 processor system bus has two decoders , Memoery decoder and port decoder.
+
+if we say device is memory mapped it means its assign a address space through memory decoder.
+if it is port map it is assigned address space through port I/O decoder.
+
+it means on x86 machines there are two distinct address spaces , there is one range of address is for memory decoder 
+and therea are one more range of address space for port I/O decoder.
+
+so because of two diffrent address spaces there are two diffrent decoders .
+
+Notes : for RISC processors thre is no port I/O decoder thre is only memory I/O space , it means in this kind of platform
+having only one decoder.it means now platform all devices are interface through memoryy decoder including RAM.
+
+In case of x86 few devices thriugh port decoder and few devices through memory decoder. 
+
+
+------------
+See the daigram 1.2
+
+The address range or address width of the processor 32-bit or 64-bit , this adress will always refered to MM 
+I/O means memory decoder.
+To Port I/O on x86 Platform 16-bit address space because port I/O is only unique for x86 .
+
+so Port I/O addresses are 16 bit word
+and MM I/O addresses are may 32-bit or 64-bit wide.
+
+for x86 PC there is a common standered called IBM PC standered :
+		This IBM PC standered enforces which devices are be on PORT I/O and which devices are can be on MM I/O.
+and because of this standered all x86 hardware is identical . It means every PC has a same configration devices 
+on Port and same configuration for MM I/O .
+
+For example : On perticilar x86 machine if uh find a keyboard controller on the PORT I/O at a specific address 
+space then in all the x86 it is same identical . this allows drivers to be portable and reusable . 
+
+
+so x86 has common standered of which device seems where and which device at which address space .
+The same is not true for RISC.
+In the case of ARM each device SOC will havings own address mapping which could be unique from the other.
+
+The 1.2 daigram is for x86 , the perpouse of this diagram is to make uh understand port I/O and MM I/O.
+
+------------------------------------------------------
+
+On linux system :
+--------------------
+
+cmd: cat /proc/ioports = list of devices which are curentlyy on PORT I/O bus .
+
+this file shows devices of PORT I/O bus.
+
+if uh try to access of this file on linux system which is booted on ARM . platform uh will not find this file at all.
+
+because both I/O does not exist on ARM
+
+
+> Decoder is standerised so all x86 having the same address map on IBM PC Standered because of portability.
+
+------------------------------
+cmd : cat /proc/iomem : this will show the devies of the MM I/O bus. this includes even RAM chips .
+so MM I/O uh can see the big addresses because MM I/O is for 32-bit or 64-bit .so this all are memory mapped devies.
+
+------------------------------------------------------------------------------
+
+so now if uh r writing some code that runs on the processor and uh have to access one register of this port I/O
+then what uh will figur out first ,before writing the code what information we need to know ?
+first we need to know specific device address range ,
+and then we need to explror in this address range , how many register in this slot 
+and then we going to figure out which register has to be programmed in which order ffor a specific opration 
+to be execute = datasheets will give uh the regigsters descriptions , datasheets also will give uh the information 
+of which registers in which order to programe for a specific opration to execute .
+
+so how uh want to do is , write code to reach some register of perticular device and program that register appropriatly .
+
+so now writing code to access that register of perticular device then we need to know the instruction command 
+of the controller bus which automatic target to the perticular slave/perticular device .
+
+so now in x86 we have two address space, we have diffent diffrent instruction set .
+there are two instruction called In and Out family of instruction 
+In and Out instruction whenever we use specifying address . 
+
+This In/Out instruction drive the opration of Port BUS
+
+See daigram : if the chip select is enabled then transaction is figure out to/Driven by PORT I/O bus .
+
+If i will use read/write instruction instaed of In/Out then this CHIP SELECT is turned OFF and transaction is 
+given to MM I/O BUS . It means programaticaly we can choose which bus to access through instructions on In/Out and Read/Write.
+
+>Read/Write instruction we to use MEMORY MAP 
+>And In/Out for PORT MAP
+
+On ARM platform there is no presence of PORT MAP so it means there is no presense of In/Out instructions .
+So directly all devices through Read/Write (MEMORY MAP).
+
+So why we have diff instruction set In/Out and Read/Write , In/Out and Read/Write diff instruction because of
+this CHIP SELECT(see figure) which can be trun on and Turn OFF .
+
+When uh say IN then we can uh want to perform the opration on the PORT I/O bus .
+-------------------------------------------------------------------------------------------
+
+Driver Architecture:
+--------------------
+
+SEE THE FIGURE 1.3
+---------------------
+
+> X86 platforms suppots port I/O and MM I/O address decorders on the system bus, which is possible since x86 
+architure provides two sapreate address spaces call PORT I/O and Memory Mapped I/O.
+> IBM PC Standerd defines specific devices which have to be interfce through the PORT I/O and devices which are 
+interface to the Memory Mapped I/O.(so this are freezed means on IBM PC standerd we have same address mapping and 
+same devices identical port map and identical memory mapped).
+
+Embedded platform their have own configuration of PORT I/O and MM I/O .
+
+> x86 Instruction set provides the in/out family of instruction for PORT I/O oprations and Read/Write family of 
+instruction for MM I/O oprations .
+
+You can see the Mapping of devices from below two files:
+
+cmd: cat /proc/ioports = list of devices which are curentlyy on PORT I/O bus .
+cmd : cat /proc/iomem : this will show the devies of the MM I/O bus. this includes even RAM chips .
+
+On ARM platform uh can not find the ioport file.
+
+So this is the basics of devices.
+
+>on RICS aarchiteure PORT I/O is not supported .
+
+----------------------------------------------
+
+So we will write the code , if uh want to talk with device so what things we should know ?
+
+1). Address Range 
+2). Registerlayout 
+3). Opratin which is going to execute.
+4). Datasheets will provide which register in which order programmed for a specific oprration to take place.
+	it means we simply figurout this things from data sheets and directly hardcode throuh app to run specific opration 
+and that code runs on the CPU this perticular chip set is enabled because that instruction could be IN/OUT and direclty 
+we can program the register opration is executed .
+
+and for MM I/O also same procidure as above only instruction will change , In place of In/Out we will enguage Read/Write
+
+----------------------------------------------------------------------------
+
+Driver Code;
+-------------
+	Driver Code is the pice of code which is programming a registers for a specific opration.
+How Driver is unique ?
+>Kernel code is only the hardware access code , that is not an driver type.
+>It's called a driver when uh get the instruction from the application and then the caries out the opration 
+
+SEE THE FIGURE 1.4
+------------------
+
+Driver code is two diffrent elements to write 
+one part of the code is about programe a device for opration.
+other part of device is about interfacing with the app , instruction from the app for which opration to carriy out 
+
+application should initiat the appropriate command to Driver respond .
+
+we have finite address space , so we can't connect more hardware byond the address space . 
+if uh connect the more devices then uh will not get the address space for ur primery memory so may be your sodtware 
+will not RUN 
+
+so howmany devices its support ? If i want to support n numbers of devices without secrifiyiing the address space?
+what are the options ?
+1st way > uh can turn off the device when its not require so another device can access the same address space .
+
+2nd way > Use another BUS so we can extendd the address space so more address space then more devices we can connect.
+			what is USB / I2C / SPI ? we are using a bus and through that bus we are interfacing a device , and that 
+devices not directly connected to CPU , because system dosnt have the address to assign to it .
+so that is the peripheral buses , peripheral bus means without having to secrifies your system primrary address spacce 
+enable to extend more number of devices .
+
+SEE THE FIGURE 1.3;
+
+then who will manage those devices ? 
+ANS : Bus controller . and the bus controller is the directly program to a CPU. 
+		SO  the bus contoller is can be a MMIO or PORT IO , through this bus contoller we can control the bunch of 
+		other devices , so all the bus we know periphral buses all of them are like this , USB PCI SPI I2C 
+cmd : cat /proc/iomem : this will show the devies of the MM I/O bus. this includes even RAM chips .
+
+without secrifying the primary address space means PORT IO and MMIO of CPU system bus so we can use Peripheral Bus
+
+so that two proc/mmio proc/portio files dosnt show the devices connected on USB/i2c/SPI buses because those 
+devices are not connected on the PORT IO and MM IO buses .
+
+
+--------------------------------------------------------------------
+
+SEE THE FIGURE 1.3;
+
+Problem : Number of devices that can be directly supported throgh MMIO or PORT IO interfaces are limited due to 
+		finite address space so for that two possile solution is 
+Solution : 
+		1). Chip select
+		2). Peripheral BUS
+
+to able to most incressed number of devices without direclty mempping them to the system address space , perphiral buses 
+are used . Examples : UART , USB , PCI , I2C ,SPI, CAN bus.
+
+bus contollers are directly memory mapped . 
+
+-------------------------------------------------
+
+> Peripheral BUS standered defines , the following (This things wil change from BUS to BUS)
+1). Physical dimention/attribute of the bUS
+2). Communication protocol between master and slave 
+3). Bus and slave enumuration(enumration includes identification etc.)
+
+
+---------------------------------------------------------
+
+SEE THE FIGURE 1.4:
+
+
+SEE THE FIGURE 1.4.1:so driver code now extended 
+
+3). Controller Access : LOW LEVEL DRIVER
+>some part of driver code must know the periphral bus controller how the master is .
+this this bus contoller (Device controller (see the fig.1.4.1)) communicate with the perticular slave device
+through a BUS protocol , that protocol defines which formate data and control commands are give to slave .
+
+2). Bus Management : MID LEVEL DRIVER
+>Then uh need some pice of code that actually packatize this all above information and provide the information to the 
+bus controller.so this pice of code must aware of bus protocol we can call them as a bus managment (SEE figure 1.4.1)
+
+1). Slave Device Operation : HIHGH LEVEL DRIVER
+> And we need one more pice of code which knows what kind of slave this is ? that is called Slave device opration
+	(see the figure 1.4.1)
+---------------------------------------
+
+SEE FIG. 1.4.1:
+
+Driver Stack :
+--------------
+
+1). Slave Device Operation : HIHGH LEVEL DRIVER(knows about slave peripheral)
+	what opration to execute ? genrate required data and control command for slave.and give this inforamtion
+	to BUS MANGMENT(MID LEVEL DRIVER)
+	There is a driver for handlling slaves.
+	
+	Kernel driver model , this driver will expose to kernel , so how it wil expose to driver ?
+	so kernel have diffrent methods of it , and diff possible way to exposing the driver to app 
+	so this driver implemntation choos one of the method it must bind and expose it self to the app .
+	which methos is expose to the app this methods we can call as kernel driver models.
+
+	so the kernel driver model is diffrent from bus model.
+
+2). Bus Management : MID LEVEL DRIVER(knows about bus protoocol)
+	Packatise the inforamtion and provides to the bus controller.
+	there is a driver for handling a bus protocol 
+	this part of code is povided by kernel.no need to write this.
+	This layer provides the abstaction to thw above and below layers
+	So thats y kernel is provinding the mid level driver all the timee
+	
+	when mid layer is start?
+	>it has to start at boot time . its medatory , other wise what happen ?
+	low level driver last step is its binding the information with mid layer .
+	at boot time MID layer is not initialised , then low level driver initiakisation will not succeed ,
+	so its mandatory it will start / initialise at boot time .
+	what kind of opration it must perform ?
+	>it must implemnnt the function for packatising/depackatising that bus for packets depending on the 
+	implementation , 
+
+	MID level have two roals :
+	1). It performs the roal of bus manager = must implemt the protocol, and its must implemnt the packet processing
+		function
+	2). and its also perform the roal of abstraction = it will have access to this device register,
+		so mid level will have the information from the low level driver in structure forms ,
+		so mid level driver have the capability to check is the targeted device is found or not .
+		if it is found then it will start your high level kernel . that means mid layer it is initializing the 
+		high level driver.untill then if uh r load into the memory highlevel driver will  not initialised .
+		high level driver initialise when the appropriate hardware is found , and 
+		who initialize the that ? MID layer .
+
+		sooooo mid layer has to provide a interface for the low level driver first register that function at 
+		boot times and mid layer have to provide interface for the high level to allows its presence and hardware
+		information. so means when hardware is found it will initialize the high level.
+
+>In android this step will  be added
+	3). Kernel HOTPLUG layer , basically it's serving frame works in adroid . it provides the information 
+		to framwork about hardware changes.so this layer now get the notification when hardware changes done.
+
+		This mid layer is provided by kernel we dont implemnt this .
+
+3). Controller Access : LOW LEVEL DRIVER(knows about master controller)
+	It should know what master is ? 
+	Driver for low level device which is for bus controller 
+	When low level driver will initialize at the boot time
+	(what it will do the after initialization?what is the first oparation after initialization?
+
+	ans : it will verify peripheral bus , and then verify how many diffrent levels of buses are found
+			we call as bus enumuration, and device enumuration, only then kernel knows the device is on the 
+			slave on a perticular bus othervise kernel could never know there is a slave on the bus,
+			so low level driver should start in to boot time ,
+			then that moment it start its must carrie out the process called bus prob.
+			this bus prob will result in discovery of busses , levels sof busses , 
+			this bus prob also discore the slave devices . so this once devices are discover then how whould kernel 
+			knows about the existance ? low level driver take the bus information and it will store in to one structure
+			and that structure genrally we called "Bus structure" so it will find 3 levels of buses , it will 
+			create 3 instances of bus structure , it instance will contains that attribute of that bus 
+			if will store the info in two structure one in set of bus structure and one in on device structure.
+			this structure veries depending on the bus stack .PCI stack has different names PCI_bus, pci_device,
+			for each device found pci_device obj will create, for each bus found pci_bus obj will create .
+			usb_device, usb_bus / i2c_client, i2c_bus / the names of data structure will change because 
+			the specific data and elements are diffrent , so that is the reason names of structure are changed
+			but all this low level driver that carries out the bus prob and the bus prob in result in enumuration
+			of the bus structure and device struture,
+			once this data structure are created it will create a list of buses and the list of devices,
+			this linked list are available for the mid layer , because mid level is serving as a abstraction layer
+			and mid level have the access of this strutures and that's how the kernel knows there is an usb device 
+			onn so and so time .)
+
+Last two level of driver code mostly same for multipule slaves only HIGH level driver code should be change.
+
+If device is directly Memoery mapped dirvers in only One layer.
+If device is on peripheral bus drivers will be in 3 layers.
+
+
+---------------------------------------------------------------
+
+> Driver Stack :- Sir Explanation
+-------------------------------------
+
+1). Low Level Driver(bus-controller / master chipset specific):
+
+	This driver is controller device sepcific and is normally initialized during early stages of kernel boot.
+	This driver must perform followong operations.
+
+		- bus-scan(for hotplug buses)(discovers devices)
+		-assign Identification Numbers to each bus and device found
+
+		-creeate stack specific bus structure to represent each physical bus found 
+		 (struct pci_bus, struct usb_bus, ...)
+		
+		-Identify slave devices found during bus scan and enumerate driver-stack specific device structure
+		 (Details of device configuaration, ex: struct pci_dev struct usb_device,i2c_client,...)
+
+----------------------till here structure will created....
+
+		-Provide packet transmission and reception routines for send/receive data/control packates from 
+		 host-to-slave
+
+		-handle interrupt events raised by host/master bus controller.
+		
+		- register its operations with appropriate driver/bus manager layer.(BIND ALL FUNCTIONS WITH MID LAYER)
+
+------------------------------------------------------------------------------------------------------------------------
+
+2).Mid-Level drivers(Bus manager):
+
+	Provided by kernel as default , and initialzed during kernel boot.
+	This layer actes as kernel's absraction layer between controller and peripheral drivers.
+
+	This layer provides followig facilities
+		-- interface for low-level drivers to register
+	
+		-- interface for high-level derivers to reguster
+	
+		-- maintain driver llist with information of registered drivers
+
+		-- match drivers with devices found and initialize high level drivers
+
+--------------- Till here above all are the abstraction -------------------
+
+		-- enumerate device/bus/driver information to kernel's hot-plug filesystem (sysfs)
+
+		-- provide ready to use function interfaces for high-level 
+			driver to initiate I/O on slave devices
+
+		--provides routines for power management
+		
+		-- Provides routines to handle bus exceptions
+
+examples : usb-core , i2c-core , pci-core ,spi-core , ...
+because of mid layer this peripharal drivers are hot plug drivers.
+		
+
+3).High -level drivers(peripheral specific)
+
+	These drivers must register with bus manager layer by specifying compatible device they can handle.
+	They are initialised by bus-manager when compatible device specified is found.
+
+	These drivers are programmed to carry out following:
+
+	-- Register with appropriate device/driver manager.
+
+	-- Register with appropriate kernel's driver absrtaction layer.
+
+	-- Initiate relevent oprations on the target device as per callers request(through routines of 
+		selected kernel driver model)

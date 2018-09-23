@@ -1,0 +1,240 @@
+
+
+Step 1 : Choose ARCH configuration
+____________________________________
+
+make help = use to see the all build commands
+make config
+make gconfig
+
+configration targets :  1) intractive = bigineers and 2)non intractive = without ui 
+________________________________________________________________
+
+config =
+graphical
+
+first 5 of option is interactrive = shows interface with dialog box and u can include 
+rest of the config command is non interactive.  
+
+example :
+make menuconfig = this command is input to the make tool "atcurses" library this is the default architeture for x86
+
+
+option in dailogbox with ---> that means sub menu 
+some of the options are selected = default config are preselected 
+
+cmd : make ARCH=arm menuconfig = this input to the tool for ARM arch(Select perticular architeture and build that arch)
+
+possible values of ARCH = "Value" all directries present in ARCH folder
+
+[] = through "space" you can select and unselect the services active and unactive 
+Note : [] services are not support dynamically because [] dont have the option of "M"
+"*" link statically
+"M" link dynamically
+<> = support M and * ( M means shared object , chosing the target to build target dynamically)
+
+
+>end of step_1 uh will get ".config"(uh will get this file after step_1(means after compiling the choosen ARCH)
+
+.config file to use the serices
+.config knows what to compile
+---------------------------------------------------------------------------------------------------
+step 2 : TO initiate Compile and Build
+______________________________________________________
+
+
+
+cmd : make (enter) = to carry out the primary object
+>lodable kernal image
+>genrate .ko file 
+>convert in to the ARCH specific kernal image
+
+
+all options = y that will make the kernal image
+it will serach in branch/folder for and compile the perticular 
+
+that kernal image is called "vmlinux"
+
+now trigger a script to compilation
+
+cmd : file vmlinux
+
+
+this BIOS loader will load the kernal in to the memory at the booting time (at the time of physical adderss)
+ELF file is based on virtual adderss 
+architecher make script will convert vmlinux ELF file to physical address space
+ARCH make file script = x86 and if will take vmlinux kernal image
+bootstrap code which contains the programe = lodable image 
+
+"M" option means we will get lyk -----> .ko is equal to .so 
+.ko is reserved with kernal only 
+.so we can use anywhere
+
+this .ko file will go into the perticular branch/folder 
+
+convert image formate to ELF/any formate to loder suppoerted formate 
+GRUB is program to load the OS only
+
+----------------------
+#make = sir doc
+____________________
+
+Step 2
+
+1.open .config
+2.indentify source file(s) for each service selected by stepping into appropriate branch
+3.Compile identified service code into relocatables using kbuild script
+4.Integrate all relocatables of the options chosen staticaly to genrate raw kernal image (vmlinux image)
+5.invoke arch Makefile to genrate lodable kernal image arch Makefile script does the following:
+- Appends arch specific boot-strap (the code of image does this below three opration)
+5.1 enable cpu's MMU
+-set up page tables
+-invokes start function of kernal proper
+5.2Appends Boot-loader specific header defining image type,load and entry addresses
+
+6.Build model object files(.ko) from relocatables of "=m" entried from .config file
+
+
+_-------------------------------------------------------
+
+NOte : wherever the sorce will genrate so for that source .ko file will be genrate in same sorce folder
+
+ready to load image could be in two forms
+
+compressed and uncompressed
+
+uncompressed = unzip code will be there 
+compressed = it will directly load 
+
+
+lodable image /boot folder = contails bootstrap code
+and raw image is in the top folder
+
+
+kernal has a loader for .ko file 
+
+
+
+-----------------------------------------
+
+step 3 : Move Module images on to root file system(RFS)
+
+cmd : make module_install (script will run and create one folder)
+
+Move module onto root file system's kernel header/in- tree modeules folder
+(/lib/module/(kernel_version_string)
+
+all .ko are genrated from the source file so that is the entry module
+
+
+------------------------------------------------------------
+
+step 4 : Install kernel image & Configure boot loader
+
+cmd : make istall
+
+	1. copies loadable kernel image(zImage) and other relavernt files into /boot folder of the root file system
+	2. updates bootloader with menu entry for new kernel
+
+
+
+---------------------------------------------------------------------------------------
+NOTE : Last two step will not execute for other plateform . mostly we are using first two steps 
+
+
+
+_______________________________________________________________
+---------------------------------------------------------------
+Integrating new services in to kernal tree
+---------------------------------------------------------------
+
+How to integate the new source file withexisting kernel sorce
+
+
+Step 1 : Move source file into approprite branch/folder of kernal source tree
+------
+
+for example usb : take/move/copy usb source file and put into usb/storage branch/folder of main kernal sorch tree folder
+
+Step 2 : Add new listing(discription of the new service) in to kernel configuration menu
+-------
+
+procedure : 
+
+- Append new config entry decrbing new service and its dependacies into Kconfig file of the local branch
+
+
+every enty of Kconfig file starts with cmd : 
+
+open "Kconfig" file
+
+config USB_TESTDRV(user can take any name as per source )
+	(bool means []/tristate means <> "use any one of them") "Service name"
+	depends on USB_STORAGE && Otherservice (uh can define all dependancy in one line with "&&"(comment: this is the dependancy)
+	help 
+		dicription for your source file
+---------------------------------------				
+
+check your new entry of source code follow below step:
+
+cmd : make menuconfig
+
+background process of above command ---> see below 
+
+scripts/kconfig/mconf = mconf is the tool for reading each Kconfig file from all directory and making the dailog box 
+
+mconf is completely depends on arch
+
+Step 3 : Modify Kbuild scripts to compile and build new service sas per chosen method
+-------
+
+	-Edit local Kbuild Makefile to have compile target for new source
+
+
+
+
+Edit the make file in local branch (This local make file is called kbuild makefile)
+
+and add the entry for your input file
+
+
+obj-$(CONFIG_USB_TESTDRV) += usbdrv.0
+
+if m means dynamic = so "obj-m" comile with .o file and if y means compile from .c file and read as "obj-y"
+
+y = vmlinux
+m = .ko 
+
+
+------------------------------------------------------
+
+
+summery:
+--------------------------------------
+LINUX Kernel Build Subsystem
+--------------------------------------
+
+
+>Major components of kbuild :
+
+	Makefile 				the top Makefile
+	.config  			 	THE KERNEL CONFIGURATION FILE.(modify)
+	arch/$(ARCH)/Makefile 	the arch Makefile
+	script/Makefile.* 		common rules etc. for all kvuild makefiles.
+	kbuild Makefiles 		Local makefiles located in subfolders of source tree(modify)
+	Kconfig 				kernel config menu scripts (modify)
+
+
+
+_-------------------------------------------------------------------------
+
+
+cd /boot go to this directorie
+
+symbole table provides = system.map 
+config file = list of configuration = config-4.4
+abi = listing of global function and global veriable = abi file
+
+when we will pass command (make module_install)
+and ls /lib/modules/ all modules ae creates in this path by 
+

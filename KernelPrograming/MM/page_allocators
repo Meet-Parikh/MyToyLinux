@@ -1,0 +1,134 @@
+Page allocators are the interface to the buddy system
+
+buddysystem the process the 
+
+it will devide/split the big block till it will not tget the reqested memory
+
+and together ones are called buddy's. and if deallocated the that will merge 
+
+result : fragmentation is minimum 
+
+buddy system is use since 70's 
+
+all this things are managed by buddy system 
+
+please see the wikipidia page for buddy system .
+
+
+1. Page Allocators
+-------------------
+
+	-Base allocators responsible for managing physical per-zone page list.
+	-Rest of the allocators are extension to page allocator.
+	-Provides allocation routines for single page and order of 2 page
+	-Engages buddy allocation strategy to ensure requested allocation are physically contigeous.
+	-Ensures (for 32-bit machines) Guaranted allocations up to 8mb requests.(byond 8mb depends on memory fragmentation state)
+
+-----------------------------------------------------------------------------------------------------------
+
+Two diffrent functions for invoking the page allocators :-
+The following are interface functions of page allocators:-
+
+Type 1: alloc family 
+------------
+1). alloc_pages = returns the address of the first page 
+
+struct page *alloc_pages(unsigned int gfp_mask,order);
+
+return : page discriptors
+
+2). alloc_page = returns the address of page discriptor
+
+
+
+---------------------------------
+3 possible values for GFP_mask
+------------------------------
+
+				GFP_ATOMIC = Normal zone , nonn blocking high priority
+				GFP_KERNEL = Normal zone normal priority (may be uh will go to wait queue) it might block
+							-kernell space allocation it might block
+				GFP_USER = Normal zone on 64 bit and high mem zone in 64 bit
+							user space allocation, may block 
+						order : number of requested (contiguous) pages is 2** order
+
+			Default for all GFP flages is normal
+
+
+the function requests 2**order contiguous page frames from the low level memory manager (buddy system) 
+and reurnns the address of the descriptor of the frist allocated page (not the page itself ) or 
+null if the function fail
+----------------------------------------------------------------------
+__free_page(p); to release a page discriptior
+----------------------------------------------------------
+
+example : alloc_page.c
+
+
+function : 
+p = alloc_page(GFP_KERNEL)
+alloc_address(p)
+
+
+
+-------------------------------------------------------------
+
+
+2nd family 
+----------
+
+this returns directly mmap that location memroy
+
+1). unsigned long * __get_free_pages(unsigned int gfp_mask,
+										unsigned int order);
+
+
+
+----------
+to allocates a single page use the following function
+
+
+2). unsigned long *get_free_page(unsigned int gfp_mask);
+
+
+how to release the page 
+
+
+free_page(p); to release a page
+
+---------------------------------------------------------------
+
+2nd BUDDY SYSTEM:
+------------------
+
+
+
+
+	- Internally used by page allocators to sort allocations.
+	- All free pages in a zone are Grouped into n(usally 2 power 11) lists of free blocks
+	-Block consists of x pages where x are powers of two:
+	x = 2**k, k = 0,1,2,3,4,...10
+	- Memory is allocated from a segment of contigeous pages using power-of-two allocator
+	- if there is a request for given size 's' , and there are no free blocks in the corresponding list 
+		then a larger block is devided untill block of size s' is reached 
+
+	- Buddy blocks are coaleased(merged) to make a larger block when not in use (when they are freed)
+
+Benefits:
+----------
+
+
+		-mimimizes external fragmentation
+		-Guarantees availabilty of physically contigeous blocks.
+		-Quick Allocation and De-allocation
+
+Limitation:
+---------
+
+- since allocations are page size or in multiples, will cause internal fragmantation when caller does not need 
+	memory in multiples of pages size.
+
+
+> so page allocators arenot applicable for small size of memory allocation. 
+so slab allocators is used for the allocates the smaller blocks,slab allocators euires the memory from the page allocators 
+now see the slab allocators txt file.

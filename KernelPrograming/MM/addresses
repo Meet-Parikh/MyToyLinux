@@ -1,0 +1,23 @@
+
+User Virtual address(segment(heap,code,data,stack)+offset)
+kernel Virtual address(page+offset) = fragmentation will happens
+linear address(page+offset) = page alloc,slab alloc, cache alloc
+physical address(frame+offset)
+
+
+List of utility macros in memory macros
+-----------------------------------------
+
+page_to_pfn(p) = its take the page discriptor and rturns frame number map to page
+pfn_to_page()= returns page discriptor map to a page
+
+
+__pa() = full 32 bit and 64 bit equivelent
+__opa() = physical to logical 
+
+to know the page size = PAGE_SIZE
+
+PAGE_SHIFT = Number of bit present in address which represent the offset.
+
+
+

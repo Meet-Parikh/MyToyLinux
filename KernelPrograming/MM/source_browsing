@@ -1,0 +1,87 @@
+Code Browsing tool = because we dont have the man pages for kernel 
+---------------------
+
+1). C tages
+
+first install C tages
+
+then go to Kernel source tree
+
+
+1.
+-----
+cmd : make tags = creates the Data base in the file called "tages"
+
+
+-------------
+
+
+if you wants the tages for perticular architecher then 
+
+make ARCH=arm tags 
+
+-------------------------------------
+how to find 
+
+vim -t "Kernel function name"
+
+example:
+
+vim -t "__get_free_pages"
+
+-------------------
+
+ctlr+} it will go to the defination
+
+:ts all the implemantation 
+
+ctrl+t to revert back
+
+
+-------------------------------------------------------
+
+> vim /etc/vim/vimrc = vimrc commented by (") we can directly configure the tags file path 
+
+
+set tags=/usr/ksrc/linux-4.2.5/tags
+
+=====================================================================
+
+
+
+one more tool CSCOP
+
+
+first install CSCOP
+
+
+then
+
+
+
+example : make ARCH=arm cscop (it will take time for genrating)
+
+
+
+and after that it will genrate .cscop file
+
+
+cmd : cscop -d 
+
+
+spacebar for scrooling and enter for go to the code
+
+through "tab" uh can transvers up and down
+
+
+-----------------------------------------------------------------------------
+
+
+one more tool 
+
+
+cmd : make mandocs 
+
+it will genrates the man pages for kernel function.
+
+cmd : make installmandocs = it will create the new man section for kernel function

@@ -1,0 +1,91 @@
+pre allocation and use after that
+
+
+cache discriptor struct is 
+
+kmem_cache 
+> kmem_cache_create("test_cache",block size,alignment(default = startadd/size),flag,NULL); = create cache
+
+> kmem_cache_alloc = it will return the  block of memory
+
+> kmem_cache_free = deallocte the cache
+>kmem_cache_destroy
+
+cat /proc/slabinfo | more
+
+
+
+sir doc:
+------------
+
+
+3.Cache Allocator:
+
+	-Built on the top of slab allocator
+	- allows kernel services to pre-allocate memory caches
+	- allows allocation of memory/object pools
+	-Always servers physically contigeous memory.
+	-Returns start linewar address of allocated memory/object
+
+
+> The following function can be used to create cache 
+(file : kernel/mm/slab.c)
+
+#include<linu/slab.h>
+
+struct kmem_cache *kmem_cache_create(const char *name,size_t size,size_t align,unsigned long flags,void(*ctor)(void*))
+
+this above function is for create the cache.
+
+
+>The function to allocate the cache.
+
+
+void *kmem_cache_alloc(struct kmem_cache *pcache,int flags);
+
+> for freeing the allocated cache / function to release 
+
+void kmem_cache_free(struct kmem_cache *pcache , void *pobj);
+
+> completly distroy the cache
+
+int kmem_cache_destroy(struct kmem_cache *pcache);
+
+
+all this are present in kernel/mm/slab.c
+
+
+--------------------------------------------------------------------
+
+
+exmaple : kmem_cache.c
+
+
+
+struct kmem_cache *mycache;
+
+mycache = kmem_cache_create("test_cache",128,0,SLAB_RED_ZONE,NULL);//last argument is a function pointer, this is like
+constroctor it will call all time when new object created/new page allocation happned / lyk constructor for initializing the page
+
+object = kmem_cache_alloc(mycache,GFP_KERNEL);
+
+kmem_cache_free(mycache,object);
+kmem_cache_destory(mycache);
+
+
+------------------------------------------------
+example : mycache.c
+
+kmem_cache_create("mycache",sizeof(private_data),0, SLAB_HWCACHE_ALIGN_cache_init);
+
+
+object cache are all active because of costructor
+all kernel is having cache allocation 
+
+
+kernelpro/mm/kmem_cache.c 
+kernelpro/mm/mycache.c
+
+
+
+ 

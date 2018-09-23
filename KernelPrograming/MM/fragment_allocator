@@ -1,0 +1,33 @@
+
+
+Fragmemntation is not linier/not contigious.
+
+
+you will get contigeous memory but that is the virtual memory address and physical memory is nott in contigious location
+
+this is very slower . but it will give the large amout the memory
+
+performance is very less
+
+kernel virttual memory is leniear but physical address is not contigeous
+
+
+--------------
+vmalloc(6000);
+
+
+
+
+
+sir doc:
+-----
+
+
+	- Built on top of page allocator
+	-handles memory allocation requests of rendom sizes
+	-returns virually contigueos memory by joining fragmemnts left over in pages
+	-returns start kernel virtual address
+	-returns start kernel virual address
+	-reuirre unique page traslation table for each allocation, and is genrated at allocation time.
+
+Routines : vmalloc, vfree

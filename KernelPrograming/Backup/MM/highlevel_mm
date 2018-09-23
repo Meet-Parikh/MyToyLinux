@@ -1,0 +1,11 @@
+ > This module contains a set of memoryy allocator algorithms ,which process all types of memory requests.
+
+Allocators
+-------------
+1. page
+2. slab
+3. cache
+4. fragment
+
+
+See the daigram of allocatorsc

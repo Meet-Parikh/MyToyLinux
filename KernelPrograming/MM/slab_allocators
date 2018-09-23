@@ -1,0 +1,83 @@
+1.Slab Allocators
+
+	- Implemented as extension to page allocator
+	- Handles memory allocators in multipules of 8 bytes
+	(8,16,32,64,128... up to 4mb)
+	- Always returns start linear address of a physically contigeous chunk 
+	-fails if it cannot find the physically contigious chunk to process an allocation request.
+	allocator routine
+
+
+		-kmalloc and family of routines
+
+				-kmalloc()
+				-kzalloc()
+				-krealloc()
+				-kcalloc()
+				-kfree()
+
+
+if uh want 130 it will go to 2565
+
+slab allocators its own free lists that we can called cache
+
+so for each free list 
+
+here no fresh allocation is occuring anywhere
+
+
+every cache is start with 1 page. and dynamically it will extract
+
+see the diagram of slab allocator
+
+
+Every cache initially having below status 
+-----------------------------------------
+
+full slab
+partially full slab
+empty slab
+
+slab is refer to array of objects.
+and slab have a status full,partial or empty
+
+you can see the info in 
+
+cat /proc/slabinfo
+
+
+sir doc:
+--------
+
+
+
+> The slab allocator group pages(object) into caches, which is a store for object of the same type(same size)
+		-Examples : process descriptors,semaphores,inode , etc.
+
+> A cache is divide into slabs . A slab consists of one or more contiguous page frames.A slab holds severral objects.
+
+
+> A slab may be in ine of three possible states
+	-Full : All Objects in the slabare marked as used.
+	-Empty : All objects in the slab are marked as free.
+	-Partially Full : the slab contains and free objects
+
+> Slab Algorithm
+	- The slab allocator first attempts to find a free object in partial slab.
+	- If no such object exists, a free object is assigned from empty slab.
+	- if no empty slab is available , a new slab is allocated using the buddy syatem allocator.
+
+> Benifits of slabs
+	-No (internal) fragmentation. The slab allocator gives the exct amount of memory that has been requested to 
+	store an object.
+	- Memory requests can be processed quickly. The released objects are only markeed as free and can quickly be reassigned.
+
+
+note : if uh r using the low memory so uh can disable slab allocators.
+
+3 types of slab versions are there uh can use any of the following based on the platform
+------------------------------------------------------------------------------------------
+slob = diable all this mechanism direclty allocate the page low memory system
+slub = locking required . this is for multicore
+slab = old / this is optimal for signle core system
+
